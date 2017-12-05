@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Palaute - Valtteri Puhakka</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Varela+Round" rel="stylesheet">
+  <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body onload="fetchApod()">
+
+<div id="wholepage" class="container-fluid" style="background-image: url(img/mist.png) repeat 0 0"> <!-- Start of whole page -->
+
+  <nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="index.html" style="font-family: 'Varela Round', sans-serif;font-size:150%;">valtteripuhakka.me</a>
+      </div>
+      <div class="collapse navbar-collapse" id="myNavbar">
+        <ul class="nav navbar-nav">
+          <li><a href="index.html">Etusivu</a></li>
+          <li><a href="nasa.html">Galleria</a></li>
+          <li><a href="palaute.html">Palaute</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+
+  <div class="container" id="div2">
+
+    <div class="row">
+      <div class="col-sm-3" id="leftcol">
+
+        <h1 style="margin-top:100px">Jätä kommentti</h1>
+
+        <p>
+          Tuliko mieleesi jotain sivustosta? Ruusuja tai risuja? Jätä kommentti!
+        </p>
+
+        <form action="palaute.html" method="post">
+
+          <label for="nimi">Nimi:</label><br>
+          <input type="text" name="nimi" id="nimi" required><br>
+          <label for="viesti" style="margin-top:50px">Viesti:</label><br>
+          <textarea id="viesti"></textarea><br><br>
+          <button id="submitBtn" onClick="submitClick()">Lähetä</button>
+
+        </form>
+
+      </div>
+      <div class="col-sm-6" id="midcol">
+
+        <h1>Kommentit</h1>
+        <div id="viestiketju"></div>
+
+      </div>
+      <div class="col-sm-3" id="rightcol">
+
+        <div id="links">
+
+          <h2 id="saaotsikko" style="margin-top:100px;">Sää Helsingissä</h2><br>
+
+          <img id="saakuva"></img><b><p id="tmp">&#8451;</p></b>
+          <p id="kuvaus"></p>
+          <p id="tuuli"></p>
+          <p id="pilvi"></p>
+
+          <br><br>
+
+          <a target="_blank" href="https://github.com/locaville"><img src="img/github.png" alt="github"></a>
+          <br><br>
+          <a target="_blank" href="https://valtteripuhakka.wordpress.com"><img src="img/wp.png" alt="wordpress"></a>
+          <br><br>
+          <a target="_blank" href="https://www.linkedin.com/in/valtteri-puhakka/"><img src="img/linkedin.png" alt="linkedin"></a>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <footer><i>&copy; Valtteri Puhakka 2017</i></footer>
+
+
+</div> <!-- End of whole page -->
+
+<br><br>
+
+<script src="https://www.gstatic.com/firebasejs/4.5.0/firebase.js"></script>
+<script>
+  // Initialize Firebase
+  var config = {
+    apiKey: "AIzaSyBiabIXX3U1E9LA-0_3J-d1eUrfBc1CuaY",
+    authDomain: "etatehtava-651b9.firebaseapp.com",
+    databaseURL: "https://etatehtava-651b9.firebaseio.com",
+    projectId: "etatehtava-651b9",
+    storageBucket: "",
+    messagingSenderId: "858331130875"
+  };
+  firebase.initializeApp(config);
+
+  var mainName = document.getElementById("nimi");
+  var mainText = document.getElementById("viesti") ;
+  var submitBtn = document.getElementById("submitBtn");
+
+  function submitClick(){
+     // tekstin tallennus
+     var firebaseRef = firebase.database().ref();
+     var teksti = mainText.value;
+     var name = mainName.value;
+     if (name.length < 1) {
+       return;
+     }
+     firebaseRef.child("viestit").push().set(
+       {nimi:name,
+       viesti:teksti});
+     }
+
+   var rootRef = firebase.database().ref().child('viestit');
+
+   rootRef.on('child_added', snap =>   {
+     var nimi = snap.child("nimi").val();
+     var viesti = snap.child("viesti").val();
+     $("#viestiketju").append("<p class='kommentti'>" + nimi + " kirjoitti:<br /><br /> <i>" + viesti + "</i></p>");
+
+
+   });
+
+
+</script>
+<script>
+
+      function fetchApod() {
+          $.ajax({
+              url: "http://api.openweathermap.org/data/2.5/weather?lang=fi&q=Helsinki&units=metric&APPID=852e3490d0498e86e711ab19574a4f5e",
+              dataType: "json",
+              timeout: 5000
+          })
+          .done(function(data) {
+              var imagesrc = "http://api.openweathermap.org/img/w/" + data.weather[0].icon + ".png";
+              var celcius = "°C";
+              $("#saakuva").attr("src", imagesrc);
+              $("#tmp").text(data.main.temp + celcius);
+              $("#kuvaus").text(data.weather[0].description);
+              $("#tuuli").text("Tuuli " + data.wind.speed + "m/s");
+              $("#pilvi").text("Pilvisyys: " + data.clouds.all + "%");
+          })
+      }
+  </script>
+
+</body>
+</html>
